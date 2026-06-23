@@ -1,0 +1,7 @@
+enum class AdError {
+    NO_INTERNET,
+    PRODUCT_PURCHASED,
+    AD_FAILED_TO_LOAD,
+    AD_FAILED_TO_SHOW,
+    AD_LOAD_TIMEOUT
+}
