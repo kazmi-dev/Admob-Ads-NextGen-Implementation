@@ -24,17 +24,21 @@ object BannerAdManager {
     private var adUnitId: String? = null
 
     enum class BannerAsSize{
-        LARGE, MEDIUM, SMALL, ADAPTIVE, LEADERBOARD, COLLAPSIBLE
+        LARGE, MEDIUM, SMALL, ADAPTIVE, COLLAPSIBLE, LEADERBOARD
     }
 
     fun showBannerAd(
         adViewContainer: FrameLayout,
         activity: Activity,
-        adUnitId: String = activity.getString(R.string.admob_medium_banner_language_id),
+        isInternetConnected: Boolean = false,
+        isAppPurchased: Boolean = false,
+        adUnitId: String = activity.getString(R.string.admob_language_screen_banner_id),
         adSize: BannerAsSize = BannerAsSize.ADAPTIVE,
+        onFailed: (AdError) -> Unit
     ){
 
-        if (PedometerAppPurchaseHelper(activity).isAnySubscriptionPurchased()) return
+        if (!isInternetConnected) { onFailed(AdError.NO_INTERNET); return }
+        if (isAppPurchased) { onFailed(AdError.APP_PURCHASED); return }
 
         if (bannerAdView != null) bannerAdView = null
 
@@ -62,7 +66,6 @@ object BannerAdManager {
         adUnitId: String,
         adSize: BannerAsSize,
         adViewContainer: FrameLayout,
-        isCollapsible: Boolean = false,
         onLoad: (ad: BannerAd) -> Unit,
         onFailed: () -> Unit
     ) {
@@ -74,28 +77,29 @@ object BannerAdManager {
             BannerAsSize.MEDIUM -> AdSize.MEDIUM_RECTANGLE
             BannerAsSize.SMALL -> AdSize.BANNER
             BannerAsSize.LEADERBOARD -> AdSize.LEADERBOARD
-            else ->  getAdaptiveBannerAdSize(activity)
+            BannerAsSize.ADAPTIVE, BannerAsSize.COLLAPSIBLE ->  getAdaptiveBannerAdSize(activity)
         }
+
+        Log.d(TAG, "loadBannerAd: BannerAdSize -> $bannerAdSize")
 
         adViewContainer.removeAllViews()
         adViewContainer.addView(bannerAdView)
 
+
         val adRequest = BannerAdRequest.Builder(adUnitId, bannerAdSize)
-            .apply { 
-                if (isCollapsible) {
-                    val extras = Bundle().apply { 
-                        putString("collapsible", "bottom")
-                    }
-                    setGoogleExtrasBundle(extras)
-                }
-            }
-            .build()
-        
+        if (adSize == BannerAsSize.COLLAPSIBLE){
+            Log.d(TAG, "loadBannerAd: Banner id is collapsible")
+            val extras = Bundle()
+            extras.putString("collapsible", "bottom")
+            adRequest.setGoogleExtrasBundle(extras)
+        }
+
         bannerAdView!!.loadAd(
-            adRequest,
+            adRequest.build(),
             object : AdLoadCallback<BannerAd> {
                 override fun onAdLoaded(ad: BannerAd) {
                     Log.d(TAG, "Banner ad loaded.")
+                    Log.i(TAG, "The last loaded banner is ${if (ad.isCollapsible()) "" else "not "}collapsible.")
                     onLoad(ad)
                 }
 
@@ -131,9 +135,49 @@ object BannerAdManager {
 
             override fun onAdPaid(value: AdValue) {
                 Log.d(TAG, "Banner ad Paid")
+                //tik tok ad revenue
+                handleAdRevenue(ad, value)
             }
 
         }
+    }
+
+    private fun handleAdRevenue(ad: BannerAd, value: AdValue) {
+        val responseExtras = ad.getResponseInfo().responseExtras
+
+        val valueMicros = value.valueMicros
+        val currencyCode = value.currencyCode
+        val precisionType = value.precisionType.ordinal
+
+        var adSourceName = ""
+        var adSourceId = ""
+        var adSourceInstanceName = ""
+        var adSourceInstanceId = ""
+
+        ad.getResponseInfo().loadedAdSourceResponseInfo?.let {
+            adSourceName = it.name
+            adSourceId = it.id
+            adSourceInstanceName = it.instanceName
+            adSourceInstanceId = it.instanceId
+        }
+
+        val mediationGroupName = responseExtras.getString("mediation_group_name", "")
+        val mediationAbTestName = responseExtras.getString("mediation_ab_test_name", "")
+        val mediationAbTestVariant = responseExtras.getString("mediation_ab_test_variant", "")
+
+        TikTokEventHelper.generateRossEvent(
+            revenue = valueMicros,
+            currencyCode = currencyCode,
+            precisionType = precisionType,
+            adUnitId = adUnitId?: "",
+            adSourceName = adSourceName,
+            adSourceId = adSourceId,
+            adSourceInstanceName = adSourceInstanceName,
+            adSourceInstanceId = adSourceInstanceId,
+            mediationGroupName = mediationGroupName,
+            mediationAbTestName = mediationAbTestName,
+            mediationAbTestVariant = mediationAbTestVariant
+        )
     }
 
     private fun getAdaptiveBannerAdSize(activity: Activity): AdSize {
@@ -148,5 +192,6 @@ object BannerAdManager {
         val adWidth = (adWidthPixels / density).toInt()
         return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(activity, adWidth)
     }
-    
+
+
 }
