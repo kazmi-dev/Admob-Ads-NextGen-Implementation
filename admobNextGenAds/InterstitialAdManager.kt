@@ -10,6 +10,8 @@ import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAdPr
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import java.lang.ref.WeakReference
@@ -24,6 +26,14 @@ object InterstitialAdManager {
         private set
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
+    enum class AdEventCallback {
+        SHOWED,
+        DISMISSED
+    }
+
+    private val _adEventFlow = MutableSharedFlow<AdEventCallback>(extraBufferCapacity = 1)
+    val adEventFlow = _adEventFlow.asSharedFlow()
 
     fun loadInterstitialAdWithTimeOut(
         activity: Activity,
@@ -63,6 +73,8 @@ object InterstitialAdManager {
             // Extract the activity after suspension finishes and check its validity
             val validActivity = activityRef.get()
             if (validActivity == null || validActivity.isFinishing || validActivity.isDestroyed) {
+                cleanup()
+                callback(AdError.AD_FAILED_TO_LOAD)
                 return@launch
             }
 
@@ -99,10 +111,12 @@ object InterstitialAdManager {
         ad.adEventCallback = object : InterstitialAdEventCallback {
             override fun onAdShowedFullScreenContent() {
                 isInterstitialShowing = true
+                _adEventFlow.tryEmit(AdEventCallback.SHOWED)
             }
 
             override fun onAdDismissedFullScreenContent() {
                 cleanup()
+                _adEventFlow.tryEmit(AdEventCallback.DISMISSED)
                 callback(null)
             }
 
