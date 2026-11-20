@@ -1,1 +1,7 @@
+*.iml
+.DS_Store
+.gradle/
+.idea/
+build/
 kotlinc/
+local.properties
