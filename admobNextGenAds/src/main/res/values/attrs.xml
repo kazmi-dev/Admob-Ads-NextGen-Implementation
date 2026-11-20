@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <attr name="adsAdUnitId" format="string" />
+    <attr name="adsAutoLoad" format="boolean" />
+
+    <declare-styleable name="AdsBannerView">
+        <attr name="adsAdUnitId" />
+        <attr name="adsAutoLoad" />
+        <attr name="adsBannerSize" format="enum">
+            <enum name="anchoredAdaptive" value="0" />
+            <enum name="inlineAdaptive" value="1" />
+            <enum name="banner" value="2" />
+            <enum name="fullBanner" value="3" />
+            <enum name="largeBanner" value="4" />
+            <enum name="leaderboard" value="5" />
+            <enum name="mediumRectangle" value="6" />
+            <enum name="fluid" value="7" />
+        </attr>
+        <attr name="adsCollapsible" format="enum">
+            <enum name="none" value="0" />
+            <enum name="top" value="1" />
+            <enum name="bottom" value="2" />
+        </attr>
+    </declare-styleable>
+
+    <declare-styleable name="AdsNativeView">
+        <attr name="adsAdUnitId" />
+        <attr name="adsAutoLoad" />
+        <attr name="adsNativeTemplate" format="enum">
+            <enum name="small" value="0" />
+            <enum name="medium" value="1" />
+            <enum name="fullScreen" value="2" />
+        </attr>
+    </declare-styleable>
+
+</resources>
