@@ -53,8 +53,8 @@ dependencyResolutionManagement {
 `app/build.gradle.kts`:
 ```kotlin
 dependencies {
-    implementation("com.github.kazmi-dev.Admob-Ads-NextGen-Implementation:admobNextGenAds:2.0.0")
-    implementation("com.github.kazmi-dev.Admob-Ads-NextGen-Implementation:admobNextGenAdsCompose:2.0.0") // Compose only
+    implementation("com.github.kazmi-dev.Admob-Ads-NextGen-Implementation:admob-ads-nextgen:2.0.0")
+    implementation("com.github.kazmi-dev.Admob-Ads-NextGen-Implementation:admob-ads-nextgen-compose:2.0.0") // Compose only
 }
 ```
 The Compose artifact already includes the core one. The version is the git tag of this repository.
