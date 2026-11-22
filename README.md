@@ -37,7 +37,7 @@ Requirements: minSdk 24, Ads SDK `1.7.0`.
 
 ## Install
 
-Packages are published to GitHub Packages, which needs a GitHub token with `read:packages` even for public packages.
+Published through [JitPack](https://jitpack.io). No token or account is needed.
 
 `settings.gradle.kts`:
 ```kotlin
@@ -45,26 +45,19 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven {
-            url = uri("https://maven.pkg.github.com/kazmi-dev/Admob-Ads-NextGen-Implementation")
-            credentials {
-                username = providers.gradleProperty("gpr.user").orNull ?: System.getenv("GITHUB_ACTOR")
-                password = providers.gradleProperty("gpr.key").orNull ?: System.getenv("GITHUB_TOKEN")
-            }
-        }
+        maven("https://jitpack.io")
     }
 }
 ```
-Put `gpr.user` and `gpr.key` in `~/.gradle/gradle.properties` (never in the project).
 
 `app/build.gradle.kts`:
 ```kotlin
 dependencies {
-    implementation("com.github.kazmi-dev:admob-ads-nextgen:2.0.0")
-    implementation("com.github.kazmi-dev:admob-ads-nextgen-compose:2.0.0") // Compose only
+    implementation("com.github.kazmi-dev.Admob-Ads-NextGen-Implementation:admobNextGenAds:2.0.0")
+    implementation("com.github.kazmi-dev.Admob-Ads-NextGen-Implementation:admobNextGenAdsCompose:2.0.0") // Compose only
 }
 ```
-The Compose artifact already includes the core one.
+The Compose artifact already includes the core one. The version is the git tag of this repository.
 
 ## Quick start
 
@@ -213,14 +206,15 @@ Every ad call then ends immediately with `AdError.PRODUCT_PURCHASED`.
 ```
 admobNextGenAds/          core library (all ads, XML views, consent)
 admobNextGenAdsCompose/   Compose wrappers
-gradle/publishing.gradle.kts   GitHub Packages publishing, shared by both modules
+jitpack.yml               JitPack build settings
+gradle/publishing.gradle.kts   Maven publication settings, shared by both modules
 docs/IMPLEMENTATION_PLAN.md    design and decisions
 legacy/                   previous single-file version, kept for reference
 ```
-Publish with `./gradlew publishReleasePublicationToGitHubPackagesRepository` (needs `gpr.user` and `gpr.key`). The version is `libraryVersion` in `gradle.properties`.
+To release: set `libraryVersion` in `gradle.properties`, merge to `main`, then create a GitHub release with the tag `X.Y.Z`. JitPack builds it the first time someone requests that version (or when you open the version on jitpack.io).
 
 ## Status
 
-Compiles against Ads SDK 1.7.0 and publishes to Maven. It has not been tested on a device yet. Still to verify on a real device: the consent flow, App Open timing and priority, collapsible banners, and how the native templates look.
+Compiles against Ads SDK 1.7.0 and builds with the JitPack command. It has not been tested on a device yet. Still to verify on a real device: the consent flow, App Open timing and priority, collapsible banners, and how the native templates look.
 
 Follow Google's AdMob policies: do not click your own ads, show interstitials at natural transition points, and use test ids while developing.
