@@ -1,6 +1,6 @@
 # AdMob NextGen Ads Utility: Implementation Plan
 
-Status: v5. Phases 0 to 7 done: all formats, Compose wrappers, README and GitHub Packages publishing, verified by a release build and a local publish. Remaining: on-device testing and unit tests.
+Status: v5. Phases 0 to 7 done: all formats, Compose wrappers, README and JitPack distribution, verified by a release build and a local publish. Remaining: on-device testing and unit tests.
 Author: Kazmi Dev
 
 ## 1. Goal
@@ -30,7 +30,7 @@ Two UI flavors: **XML (Views)** and **Jetpack Compose**, sharing one core.
 
 | Topic | Decision |
 |---|---|
-| Distribution | Published later as a **GitHub Packages library** (AAR, Maven coordinates). Source stays copy-friendly. |
+| Distribution | **JitPack** (built from git tags of the public repo, no token for users). GitHub Packages was dropped because it requires a token even for public packages. |
 | Package name | `com.kazmi.dev.adsnextgen` (real package, which is what a published library needs). |
 | Ad unit ids | **Google test ids by default.** The user passes real ids at `initialize`, or only the app id and then an id with each call. |
 | Per-call id | Every preload/show/banner/native call accepts an optional `adUnitId` so different screens can use different ids at runtime. |

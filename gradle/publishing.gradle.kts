@@ -15,15 +15,5 @@ afterEvaluate {
                 version = rootProject.property("libraryVersion") as String
             }
         }
-        repositories {
-            maven {
-                name = "GitHubPackages"
-                url = uri("https://maven.pkg.github.com/kazmi-dev/Admob-Ads-NextGen-Implementation")
-                credentials {
-                    username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
-                    password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
-                }
-            }
-        }
     }
 }
